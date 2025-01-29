@@ -1,0 +1,141 @@
+openapi: 3.1.1
+info:
+  title: crm-api
+  # Microcks expects API versions for mock generation both in input specifications and accompanying "secondary
+  # artifacts" such as Postman collections with API examples. Moreover, the versions must match.
+  version: "1.0.0-SNAPSHOT"
+paths:
+  /login:
+    post:
+      operationId: login_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Unauthorized
+      security:
+        - api_token: []
+  /customers:
+    get:
+      operationId: customers_get
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+        "401":
+          description: Unauthorized
+      security:
+        - access_token: []
+    post:
+      operationId: customers_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerCreationRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+      security:
+        - api_token: [ ]
+  /customers/{email}:
+    get:
+      operationId: customer_get
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+      security:
+        - api_token: [ ]
+components:
+  schemas:
+    LoginRequest:
+      required:
+        - email
+        - password
+      type: object
+      properties:
+        email:
+          title: Email
+          type: string
+          format: email
+        password:
+          title: Password
+          type: string
+          format: password
+          writeOnly: true
+    LoginResponse:
+      required:
+        - login_token
+      type: object
+      properties:
+        login_token:
+          title: Login Token
+          type: string
+    CustomerResponse:
+      required:
+        - firstname
+        - lastname
+      type: object
+      properties:
+        firstname:
+          title: Firstname
+          type: string
+        lastname:
+          title: Lastname
+          type: string
+    CustomerCreationRequest:
+      required:
+        - email
+        - password
+        - firstname
+        - lastname
+      type: object
+      properties:
+        email:
+          title: Email
+          type: string
+          format: email
+        password:
+          title: Password
+          type: string
+          format: password
+          writeOnly: true
+        firstname:
+          title: Firstname
+          type: string
+        lastname:
+          title: Lastname
+          type: string
+  securitySchemes:
+    api_token:
+      type: http
+      scheme: bearer
+    access_token:
+      type: http
+      scheme: bearer

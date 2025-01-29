@@ -1,0 +1,86 @@
+apiVersion: mocks.microcks.io/v1alpha1
+kind: APIExamples
+metadata:
+  name: crm-api
+  version: "1.0.0-SNAPSHOT"
+operations:
+  "POST /login":
+    existing_customer:
+      request:
+        headers:
+          Accept: application/json
+        mediaType: application/json
+        body:
+          email: "${EXISTING_CUSTOMER_EMAIL}"
+          password: "${EXISTING_CUSTOMER_PASSWORD}"
+      response:
+        status: "200"
+        mediaType: application/json
+        body:
+          login_token: "${EXISTING_CUSTOMER_LOGIN_TOKEN}"
+    new_customer:
+      request:
+        headers:
+          Accept: application/json
+        mediaType: application/json
+        body:
+          email: "${NEW_CUSTOMER_EMAIL}"
+          password: "${NEW_CUSTOMER_PASSWORD}"
+      response:
+        status: "200"
+        mediaType: application/json
+        body:
+          login_token: "${NEW_CUSTOMER_LOGIN_TOKEN}"
+    wrong_credentials:
+      request:
+      response:
+        status: "401"
+  "GET /customers":
+    existing_customer:
+      request:
+      response:
+        status: "200"
+        mediaType: application/json
+        body:
+          firstname: "${EXISTING_CUSTOMER_FIRSTNAME}"
+          lastname: "${EXISTING_CUSTOMER_LASTNAME}"
+          address: "{{ randomStreetName() }} {{ randomInt(1, 500) }},
+            {{ randomInt(1000, 65635) }} {{ randomCity() }},
+            {{ randomCountry() }}"
+    new_customer:
+      request:
+      response:
+        status: "200"
+        mediaType: application/json
+        body:
+          firstname: "{{ newCustomerFirstname }}"
+          lastname: "{{ newCustomerLastname }}"
+          address: "{{ randomStreetName() }} {{ randomInt(1, 500) }},
+            {{ randomInt(1000, 65635) }} {{ randomCity() }},
+            {{ randomCountry() }}"
+    unauthorized_or_unknown_customer:
+      request:
+      response:
+        status: "401"
+  "POST /customers":
+    new_customer:
+      request:
+      response:
+        status: "201"
+    invalid_customer:
+      request:
+      response:
+        status: "400"
+  "GET /customers/{email}":
+    customer_exists:
+      request:
+      response:
+        status: "200"
+    unauthorized:
+      request:
+      response:
+        status: "401"
+    unknown_customer:
+      request:
+      response:
+        status: "404"

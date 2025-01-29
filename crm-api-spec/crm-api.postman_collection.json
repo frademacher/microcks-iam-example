@@ -1,0 +1,33 @@
+{
+	"info": {
+		"_postman_id": "13f6748c-b5e7-40cc-8b2a-719f83d4c265",
+		"name": "crm-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31307651"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"{username}\",\n    \"password\": \"{password}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "login",
+					"host": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

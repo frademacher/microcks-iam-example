@@ -1,0 +1,72 @@
+apiVersion: mocks.microcks.io/v1alpha1
+kind: APIMetadata
+metadata:
+  name: crm-api
+  version: "1.0.0-SNAPSHOT"
+operations:
+  "POST /login":
+    parameterConstraints:
+      - name: Authorization
+        in: header
+        required: true
+        recopy: false
+        mustMatchRegexp: "^Bearer\\s\\Q${API_TOKEN}\\E$"
+    dispatcher: SCRIPT
+    dispatcherRules: |-
+      def request = new groovy.json.JsonSlurper().parseText(mockRequest.requestContent)
+      if (request.email == "${EXISTING_CUSTOMER_EMAIL}" && request.password == "${EXISTING_CUSTOMER_PASSWORD}")
+        return "existing_customer"
+      else if (request.email == "${NEW_CUSTOMER_EMAIL}" && request.password == "${NEW_CUSTOMER_PASSWORD}")
+        return "new_customer"
+      
+      return "wrong_credentials"
+  "GET /customers":
+    dispatcher: SCRIPT
+    dispatcherRules: |-
+      def headers = mockRequest.getRequestHeaders()
+      if (headers.hasValues("Authorization")) {
+        def authHeader = headers.get("Authorization", "null")
+        switch(authHeader) {
+          case "Bearer ${EXISTING_CUSTOMER_LOGIN_TOKEN}":
+            return "existing_customer"
+          case "Bearer ${NEW_CUSTOMER_LOGIN_TOKEN}":
+            requestContext.newCustomerFirstname = store.get("${NEW_CUSTOMER_ID}_firstname")
+            requestContext.newCustomerLastname = store.get("${NEW_CUSTOMER_ID}_lastname")
+            return "new_customer"
+        }          
+      }
+      
+      return "unauthorized_or_unknown_customer"
+  "POST /customers":
+    parameterConstraints:
+      - name: Authorization
+        in: header
+        required: true
+        recopy: false
+        mustMatchRegexp: "^Bearer\\s\\Q${API_TOKEN}\\E$"
+    dispatcher: SCRIPT
+    dispatcherRules: |-
+      def newCustomerLoginTokenKey = "${NEW_CUSTOMER_ID}_loginToken"
+      if (store.get(newCustomerLoginTokenKey) != null)
+        return "invalid_customer"
+      
+      def customer = new groovy.json.JsonSlurper().parseText(mockRequest.requestContent)
+      store.put(customer.email, "")
+      store.put("${NEW_CUSTOMER_ID}_firstname", customer.firstname)
+      store.put("${NEW_CUSTOMER_ID}_lastname", customer.lastname)
+      store.put(newCustomerLoginTokenKey, "${NEW_CUSTOMER_LOGIN_TOKEN}")
+      return "new_customer"
+  "GET /customers/{email}":
+    parameterConstraints:
+      - name: Authorization
+        in: header
+        required: true
+        recopy: false
+        mustMatchRegexp: "^Bearer\\s\\Q${API_TOKEN}\\E$"
+    dispatcher: SCRIPT
+    dispatcherRules: |-
+      def requestedEmail = mockRequest.getRequest().getRequestURI().tokenize("/").last()
+      if (store.get(requestedEmail) != null)
+        return "customer_exists"
+        
+      return "unknown_customer"
