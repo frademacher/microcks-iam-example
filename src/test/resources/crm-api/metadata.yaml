@@ -50,7 +50,7 @@ operations:
         return "invalid_customer"
       
       def customer = new groovy.json.JsonSlurper().parseText(mockRequest.requestContent)
-      store.put("registeredCustomerEmail", customer.email)
+      store.put(customer.email, "")
       store.put("${NEW_CUSTOMER_ID}_firstname", customer.firstname)
       store.put("${NEW_CUSTOMER_ID}_lastname", customer.lastname)
       store.put(newCustomerLoginTokenKey, "${NEW_CUSTOMER_LOGIN_TOKEN}")
@@ -64,7 +64,9 @@ operations:
         mustMatchRegexp: "^Bearer\\s\\Q${API_TOKEN}\\E$"
     dispatcher: SCRIPT
     dispatcherRules: |-
-      if (store.get("registeredCustomerEmail") != null)
+      String[] uriParts = mockRequest.getRequest().getRequestURI().substring(1).split("/")
+      String customerEmail = uriParts[4]
+      if (store.get(customerEmail) != null)
         return "customer_exists"
-        
+      
       return "unknown_customer"
