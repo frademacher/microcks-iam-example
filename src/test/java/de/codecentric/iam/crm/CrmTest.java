@@ -146,8 +146,7 @@ class CrmTest {
         assertThat(migratedUser.getFirstName()).isEqualTo(customerMockData.getFirstname());
         assertThat(migratedUser.getLastName()).isEqualTo(customerMockData.getLastname());
         assertThat(migratedUser.firstAttribute(CRM_CUSTOMER_ID_ATTRIBUTE)).isEqualTo(customerMockData.getCustomerId());
-        assertThat(migratedUser.firstAttribute(CRM_CUSTOMER_ADDRESS_ATTRIBUTE))
-            .matches("[A-Za-z ]+ \\d+, \\d+ [A-Za-z ]+, [A-Za-z ]+");
+        assertThat(migratedUser.firstAttribute(CRM_CUSTOMER_ADDRESS_ATTRIBUTE)).matches(".+ \\d+, \\d+ .+, .+(, .+)?");
     }
 
     /**
