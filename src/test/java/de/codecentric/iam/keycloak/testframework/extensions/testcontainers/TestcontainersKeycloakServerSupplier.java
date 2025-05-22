@@ -2,7 +2,6 @@ package de.codecentric.iam.keycloak.testframework.extensions.testcontainers;
 
 import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.annotations.WithKeycloakTestcontainer;
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.testframework.annotations.InjectAdminClient;
 import org.keycloak.testframework.injection.InstanceContext;
 import org.keycloak.testframework.injection.LifeCycle;
 import org.keycloak.testframework.injection.RequestedInstance;

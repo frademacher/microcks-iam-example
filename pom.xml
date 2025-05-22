@@ -17,15 +17,16 @@
         <assertj.version>3.27.3</assertj.version>
         <auto-service.version>1.1.1</auto-service.version>
         <commons-lang3.version>3.17.0</commons-lang3.version>
-        <commons-io.version>2.18.0</commons-io.version>
-        <junit.version>5.11.4</junit.version>
-        <keycloak.version>26.1.3</keycloak.version>
-        <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
+        <commons-io.version>2.19.0</commons-io.version>
+        <junit.version>5.12.2</junit.version>
+        <keycloak.version>26.2.4</keycloak.version>
+        <keycloak.oauth.nimbus.poc.version>26.1.5</keycloak.oauth.nimbus.poc.version>
+        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-        <microcks-app.version>1.11.0</microcks-app.version>
-        <microcks-testcontainers.version>0.3.0</microcks-testcontainers.version>
-        <testcontainers.version>1.20.4</testcontainers.version>
-        <testcontainers-keycloak.version>3.6.0</testcontainers-keycloak.version>
+        <microcks-app.version>1.11.2</microcks-app.version>
+        <microcks-testcontainers.version>0.3.1</microcks-testcontainers.version>
+        <testcontainers.version>1.21.0</testcontainers.version>
+        <testcontainers-keycloak.version>3.7.0</testcontainers-keycloak.version>
     </properties>
 
     <dependencyManagement>
@@ -78,6 +79,16 @@
 
         <dependency>
             <groupId>org.keycloak.testframework</groupId>
+            <artifactId>keycloak-test-framework-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.keycloak.testframework</groupId>
+            <artifactId>keycloak-test-framework-junit5-config</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.keycloak.testframework</groupId>
             <artifactId>keycloak-test-framework-remote</artifactId>
             <scope>test</scope>
         </dependency>
@@ -85,6 +96,7 @@
         <dependency>
             <groupId>org.keycloak.testframework</groupId>
             <artifactId>keycloak-test-framework-oauth-nimbus-poc</artifactId>
+            <version>${keycloak.oauth.nimbus.poc.version}</version>
         </dependency>
 
         <dependency>

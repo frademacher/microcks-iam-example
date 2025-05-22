@@ -17,8 +17,6 @@ import org.keycloak.testframework.annotations.InjectKeycloakUrls;
 import org.keycloak.testframework.annotations.InjectRealm;
 import org.keycloak.testframework.annotations.KeycloakIntegrationTest;
 import org.keycloak.testframework.realm.ManagedRealm;
-import org.keycloak.testframework.realm.RealmConfig;
-import org.keycloak.testframework.realm.RealmConfigBuilder;
 import org.keycloak.testframework.server.KeycloakUrls;
 import org.keycloak.testframework.ui.annotations.InjectPage;
 import org.keycloak.testframework.ui.annotations.InjectWebDriver;
@@ -52,7 +50,7 @@ class CrmTest {
     private static ApiMock apiMock;
 
     @Container
-    static MicrocksContainer microcksContainer = new MicrocksContainer("quay.io/microcks/microcks-uber:1.11.0")
+    static MicrocksContainer microcksContainer = new MicrocksContainer("quay.io/microcks/microcks-uber:1.11.2")
         .withNetwork(CONTAINER_NETWORK)
         .withMainArtifacts(API_SPEC_RESOURCE_PATH);
 
@@ -88,15 +86,8 @@ class CrmTest {
     @InjectOAuthClientForKeycloakTestcontainersClient(clientId = "login-test")
     private OAuthClientForKeycloakTestcontainersClient oauthClient;
 
-    @InjectRealm(config = TestRealmConfig.class, createRealm = false)
+    @InjectRealm(attachTo = TEST_REALM_NAME)
     private ManagedRealm testRealm;
-
-    static class TestRealmConfig implements RealmConfig {
-        @Override
-        public RealmConfigBuilder configure(RealmConfigBuilder realm) {
-            return realm.name(TEST_REALM_NAME);
-        }
-    }
 
     @InjectWebDriver
     WebDriver webDriver;

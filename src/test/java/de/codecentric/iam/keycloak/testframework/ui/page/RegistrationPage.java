@@ -31,6 +31,11 @@ public class RegistrationPage extends AbstractPage {
         super(driver);
     }
 
+    @Override
+    public final String getExpectedPageId() {
+        return "login-register";
+    }
+
     public void fillRegistration(String username, String password, String passwordConfirm, String firstname,
         String lastname) {
         emailInput.sendKeys(username);

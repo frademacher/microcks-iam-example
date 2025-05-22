@@ -4,7 +4,7 @@ import com.google.auto.service.AutoService;
 import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.oauth.OAuthClientForKeycloakTestcontainersClientSupplier;
 import org.keycloak.testframework.CoreTestFrameworkExtension;
 import org.keycloak.testframework.TestFrameworkExtension;
-import org.keycloak.testframework.admin.KeycloakAdminClientSupplier;
+import org.keycloak.testframework.admin.AdminClientSupplier;
 import org.keycloak.testframework.injection.Supplier;
 import org.keycloak.testframework.server.KeycloakServer;
 
@@ -28,7 +28,7 @@ public class TestcontainersFrameworkExtension extends CoreTestFrameworkExtension
 
         // Replace Admin Client supplier with a version that is able to supply a Keycloak Testcontainers Admin Client
         // when being asked for
-        suppliers.removeIf(KeycloakAdminClientSupplier.class::isInstance);
+        suppliers.removeIf(AdminClientSupplier.class::isInstance);
         suppliers.add(new TestcontainersKeycloakAdminClientSupplier());
 
         return suppliers;
