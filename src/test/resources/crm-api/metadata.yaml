@@ -65,7 +65,7 @@ operations:
         mustMatchRegexp: "^Bearer\\s\\Q${API_TOKEN}\\E$"
     dispatcher: SCRIPT
     dispatcherRules: |-
-      def requestedEmail = mockRequest.getRequest().getRequestURI().tokenize("/").last()
+      def requestedEmail = mockRequest.getURIParameters().get("email")
       if (store.get(requestedEmail) != null)
         return "customer_exists"
         
