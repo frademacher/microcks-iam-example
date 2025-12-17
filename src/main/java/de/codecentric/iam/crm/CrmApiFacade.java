@@ -3,7 +3,7 @@ package de.codecentric.iam.crm;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jboss.logging.Logger;
-import org.keycloak.broker.provider.util.SimpleHttp;
+import org.keycloak.http.simple.SimpleHttp;
 import org.keycloak.models.KeycloakSession;
 
 import java.io.IOException;
@@ -61,7 +61,8 @@ public class CrmApiFacade {
             // Perform request and build response
             try (
                 var response = SimpleHttp
-                    .doPost(apiConfig.getUrl() + "/login", session)
+                    .create(session)
+                    .doPost(apiConfig.getUrl() + "/login")
                     .auth(apiConfig.getApiToken())
                     .acceptJson()
                     .json(request)
@@ -90,7 +91,8 @@ public class CrmApiFacade {
 
             try (
                 var response = SimpleHttp
-                    .doGet(apiConfig.getUrl() + "/customers", session)
+                    .create(session)
+                    .doGet(apiConfig.getUrl() + "/customers")
                     .auth(loginToken)
                     .asResponse()
             ) {
@@ -138,7 +140,8 @@ public class CrmApiFacade {
             // Perform request and build response
             try (
                 var response = SimpleHttp
-                    .doPost(apiConfig.getUrl() + "/customers", session)
+                    .create(session)
+                    .doPost(apiConfig.getUrl() + "/customers")
                     .auth(apiConfig.getApiToken())
                     .acceptJson()
                     .json(request)
@@ -162,7 +165,8 @@ public class CrmApiFacade {
 
             try (
                 var response = SimpleHttp
-                    .doGet(apiConfig.getUrl() + "/customers/" + email, session)
+                    .create(session)
+                    .doGet(apiConfig.getUrl() + "/customers/" + email)
                     .auth(apiConfig.getApiToken())
                     .asResponse()
             ) {

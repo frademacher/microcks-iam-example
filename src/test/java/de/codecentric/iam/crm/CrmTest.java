@@ -4,23 +4,20 @@ import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.Testc
 import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.TestcontainersKeycloakServerConfigBuilder;
 import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.TestcontainersKeycloakServerSupplier;
 import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.annotations.WithKeycloakTestcontainer;
-import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.oauth.OAuthClientForKeycloakTestcontainersClient;
-import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.oauth.annotations.InjectOAuthClientForKeycloakTestcontainersClient;
-import de.codecentric.iam.keycloak.testframework.ui.page.LoginPageWithRegistrationLink;
 import de.codecentric.iam.keycloak.testframework.ui.page.RegistrationPage;
 import io.github.microcks.testcontainers.MicrocksContainer;
 import org.codehaus.plexus.util.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.keycloak.testframework.annotations.InjectKeycloakUrls;
 import org.keycloak.testframework.annotations.InjectRealm;
 import org.keycloak.testframework.annotations.KeycloakIntegrationTest;
+import org.keycloak.testframework.oauth.OAuthClient;
+import org.keycloak.testframework.oauth.annotations.InjectOAuthClient;
+import org.keycloak.testframework.realm.ClientConfig;
+import org.keycloak.testframework.realm.ClientConfigBuilder;
 import org.keycloak.testframework.realm.ManagedRealm;
-import org.keycloak.testframework.server.KeycloakUrls;
 import org.keycloak.testframework.ui.annotations.InjectPage;
-import org.keycloak.testframework.ui.annotations.InjectWebDriver;
-import org.openqa.selenium.WebDriver;
 import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -50,7 +47,7 @@ class CrmTest {
     private static ApiMock apiMock;
 
     @Container
-    static MicrocksContainer microcksContainer = new MicrocksContainer("quay.io/microcks/microcks-uber:1.11.2")
+    static final MicrocksContainer microcksContainer = new MicrocksContainer("quay.io/microcks/microcks-uber:1.13.1")
         .withNetwork(CONTAINER_NETWORK)
         .withMainArtifacts(API_SPEC_RESOURCE_PATH);
 
@@ -83,23 +80,21 @@ class CrmTest {
         }
     }
 
-    @InjectOAuthClientForKeycloakTestcontainersClient(clientId = "login-test")
-    private OAuthClientForKeycloakTestcontainersClient oauthClient;
+    @InjectOAuthClient(config = OauthClientConfig.class)
+    private OAuthClient oauthClient;
+
+    static class OauthClientConfig implements ClientConfig {
+        @Override
+        public ClientConfigBuilder configure(ClientConfigBuilder clientConfigBuilder) {
+            return clientConfigBuilder.clientId("login-test");
+        }
+    }
 
     @InjectRealm(attachTo = TEST_REALM_NAME)
     private ManagedRealm testRealm;
 
-    @InjectWebDriver
-    WebDriver webDriver;
-
     @InjectPage
-    LoginPageWithRegistrationLink loginPage;
-
-    @InjectKeycloakUrls
-    KeycloakUrls keycloakUrls;
-
-    @InjectPage
-    RegistrationPage registrationPage;
+    private RegistrationPage registrationPage;
 
     /**
      * Cleanup Keycloak login sessions on the test realm after each test.
@@ -117,11 +112,9 @@ class CrmTest {
     void loginMigrationTest() {
         var userCountBeforeMigration = testRealm.admin().users().count();
 
-        // Navigate to Keycloak login page, fill it with the mock data of the existing CRM customer, and submit it
-        webDriver.navigate().to(oauthClient.authorizationRequest());
+        // Submit Keycloak login page with the mock data of the existing CRM customer
         var customerMockData = apiMock.getExistingCustomerMockData();
-        loginPage.fillLogin(customerMockData.getEmail(), customerMockData.getPassword());
-        loginPage.submit();
+        oauthClient.doLogin(customerMockData.getEmail(), customerMockData.getPassword());
 
         // Assert that the mocked CRM API got actually called by the migrating login Keycloak authenticator
         assertThat(microcksContainer.verify(apiMock.getSpecifiedApiTitle(), apiMock.getSpecifiedApiVersion())).isTrue();
@@ -146,21 +139,10 @@ class CrmTest {
      */
     @Test
     void registrationTest() {
-        // Navigate to Keycloak registration page (by extracting the link from the login page), fill it with the mock
-        // data of the new CRM customer, and submit it
-        webDriver.navigate().to(oauthClient.authorizationRequest());
-        var registrationUrl = loginPage.buildRegistrationUrl(keycloakUrls.getBaseUrl());
-        webDriver.navigate().to(registrationUrl);
+        // Navigate to Keycloak registration page, fill it with the mock data of the new CRM customer, and submit it
         var customerMockData = apiMock.getNewCustomerMockData();
-        registrationPage.fillRegistration(
-            customerMockData.getEmail(),
-            customerMockData.getPassword(),
-            // Password confirmation
-            customerMockData.getPassword(),
-            customerMockData.getFirstname(),
-            customerMockData.getLastname()
-        );
-        registrationPage.submit();
+        doRegistration(customerMockData.getEmail(), customerMockData.getPassword(), customerMockData.getPassword(),
+            customerMockData.getFirstname(), customerMockData.getLastname());
 
         // Assert that the new CRM customer got actually registered as a Keycloak user
         var registeredUser = assertThat(testRealm.admin().users().search(customerMockData.getEmail()))
@@ -175,21 +157,19 @@ class CrmTest {
         // use the login form to migrate their existing CRM customer into a Keycloak user)
         try (var response = testRealm.admin().users().delete(registeredUser.getId())) {
             assertThat(response.getStatus()).isEqualTo(SC_NO_CONTENT);
-
-            webDriver.navigate().to(oauthClient.authorizationRequest());
-            registrationUrl = loginPage.buildRegistrationUrl(keycloakUrls.getBaseUrl());
-            webDriver.navigate().to(registrationUrl);
-
-            registrationPage.fillRegistration(
-                customerMockData.getEmail(),
-                customerMockData.getPassword(),
-                customerMockData.getPassword(),
-                customerMockData.getFirstname(),
-                customerMockData.getLastname()
-            );
-            registrationPage.submit();
-
+            doRegistration(customerMockData.getEmail(), customerMockData.getPassword(), customerMockData.getPassword(),
+                customerMockData.getFirstname(), customerMockData.getLastname());
             assertThat(testRealm.admin().users().search(customerMockData.getEmail())).isEmpty();
         }
+    }
+
+    /**
+     * Perform Keycloak registration with the given data.
+     */
+    private void doRegistration(String email, String password, String passwordConfirmation, String firstname,
+        String lastname) {
+        oauthClient.openRegistrationForm();
+        registrationPage.fillRegistration(email, password, passwordConfirmation, firstname, lastname);
+        registrationPage.submit();
     }
 }

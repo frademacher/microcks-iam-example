@@ -11,6 +11,8 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.representations.AccessToken;
+import org.keycloak.userprofile.ValidationException;
+import org.keycloak.validate.ValidationError;
 
 import java.util.List;
 
@@ -56,6 +58,8 @@ public class CrmRegistrationAction extends RegistrationUserCreation {
         if (customerExists.orElse(true)) {
             context.getEvent().detail(Details.EMAIL, email);
             context.error(Errors.EMAIL_IN_USE);
+            // Prevent NPE from FormAuthenticationFlow.processAction()
+            context.validationError(formData, List.of());
         } else
             super.validate(context);
     }
