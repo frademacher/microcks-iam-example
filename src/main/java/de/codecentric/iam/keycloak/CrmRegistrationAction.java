@@ -11,8 +11,6 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.representations.AccessToken;
-import org.keycloak.userprofile.ValidationException;
-import org.keycloak.validate.ValidationError;
 
 import java.util.List;
 
