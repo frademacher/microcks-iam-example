@@ -1,7 +1,7 @@
 package de.codecentric.iam.keycloak.testframework.extensions.testcontainers;
 
-import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.annotations.WithKeycloakTestcontainer;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.testframework.annotations.KeycloakIntegrationTest;
 import org.keycloak.testframework.injection.InstanceContext;
 import org.keycloak.testframework.injection.LifeCycle;
 import org.keycloak.testframework.injection.RequestedInstance;
@@ -12,19 +12,9 @@ import org.keycloak.testframework.server.KeycloakServer;
 import org.keycloak.testframework.server.RemoteKeycloakServer;
 
 /**
- * Keycloak Test Framework {@link Supplier} for the {@link WithKeycloakTestcontainer} annotation.
+ * Keycloak Test Framework {@link Supplier} for Keycloak instances running in testcontainers.
  */
-public class TestcontainersKeycloakServerSupplier implements Supplier<KeycloakServer, WithKeycloakTestcontainer> {
-    @Override
-    public Class<KeycloakServer> getValueType() {
-        return KeycloakServer.class;
-    }
-
-    @Override
-    public Class<WithKeycloakTestcontainer> getAnnotationClass() {
-        return WithKeycloakTestcontainer.class;
-    }
-
+public class TestcontainersKeycloakServerSupplier implements Supplier<KeycloakServer, KeycloakIntegrationTest> {
     @Override
     public String getAlias() {
         return "testcontainers";
@@ -36,12 +26,10 @@ public class TestcontainersKeycloakServerSupplier implements Supplier<KeycloakSe
      * {@link TestcontainersKeycloakServer}.
      */
     @Override
-    public KeycloakServer getValue(
-        InstanceContext<KeycloakServer, WithKeycloakTestcontainer> instanceContext
-    ) {
+    public KeycloakServer getValue(InstanceContext<KeycloakServer, KeycloakIntegrationTest> instanceContext) {
         var annotation = instanceContext.getAnnotation();
-        var testcontainersConfig = SupplierHelpers.getInstance(annotation.config());
-        var container = testcontainersConfig.configure().startContainer();
+        var containerConfig = (TestcontainersKeycloakServerConfig) SupplierHelpers.getInstance(annotation.config());
+        var container = containerConfig.startContainer();
         return new TestcontainersKeycloakServer(container.getAuthServerUrl(), container.getKeycloakAdminClient());
     }
 
@@ -70,13 +58,17 @@ public class TestcontainersKeycloakServerSupplier implements Supplier<KeycloakSe
     }
 
     @Override
-    public boolean compatible(InstanceContext<KeycloakServer, WithKeycloakTestcontainer> a,
-        RequestedInstance<KeycloakServer, WithKeycloakTestcontainer> b) {
-        return a.getAnnotation().config().equals(b.getAnnotation().config());
+    public boolean compatible(InstanceContext<KeycloakServer, KeycloakIntegrationTest> a,
+        RequestedInstance<KeycloakServer, KeycloakIntegrationTest> b) {
+        var aConfigClass = a.getAnnotation().config();
+        var bConfigClass = b.getAnnotation().config();
+        return aConfigClass.equals(bConfigClass) &&
+            TestcontainersKeycloakServerConfig.class.isAssignableFrom(aConfigClass) &&
+            TestcontainersKeycloakServerConfig.class.isAssignableFrom(bConfigClass);
     }
 
     @Override
-    public void close(InstanceContext<KeycloakServer, WithKeycloakTestcontainer> instanceContext) {
+    public void close(InstanceContext<KeycloakServer, KeycloakIntegrationTest> instanceContext) {
         instanceContext.getValue().stop();
     }
 

@@ -20,7 +20,7 @@ public class TestcontainersFrameworkExtension extends CoreTestFrameworkExtension
     public List<Supplier<?, ?>> suppliers() {
         var suppliers = new ArrayList<>(super.suppliers());
 
-        // Supplier for new annotation @WithKeycloakTestcontainer
+        // Supplier for Keycloak instances running in testcontainers
         suppliers.add(new TestcontainersKeycloakServerSupplier());
 
         // Replace Admin Client supplier with a version that is able to supply a Keycloak Testcontainers Admin Client

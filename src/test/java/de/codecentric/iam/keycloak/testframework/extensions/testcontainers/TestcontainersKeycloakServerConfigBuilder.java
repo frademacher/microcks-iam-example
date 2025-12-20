@@ -1,6 +1,7 @@
 package de.codecentric.iam.keycloak.testframework.extensions.testcontainers;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
+import org.keycloak.testframework.config.Config;
 import org.testcontainers.containers.Network;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
@@ -15,11 +16,13 @@ public class TestcontainersKeycloakServerConfigBuilder {
     private final KeycloakContainer keycloakContainer;
 
     public TestcontainersKeycloakServerConfigBuilder() {
-        this.keycloakContainer = new KeycloakContainer();
+        keycloakContainer = new KeycloakContainer();
+        keycloakContainer
+            .withAdminUsername(Config.getAdminUsername())
+            .withAdminPassword(Config.getAdminPassword());
     }
 
-    KeycloakContainer startContainer() {
-        keycloakContainer.start();
+    public KeycloakContainer getConfiguredKeycloakContainer() {
         return keycloakContainer;
     }
 
@@ -42,11 +45,6 @@ public class TestcontainersKeycloakServerConfigBuilder {
 
     public TestcontainersKeycloakServerConfigBuilder withDebugFixedPort(int hostPort, boolean suspend) {
         keycloakContainer.withDebugFixedPort(hostPort, suspend);
-        return this;
-    }
-
-    public TestcontainersKeycloakServerConfigBuilder withAdminCredentials(String username, String password) {
-        keycloakContainer.withAdminUsername(username).withAdminPassword(password);
         return this;
     }
 

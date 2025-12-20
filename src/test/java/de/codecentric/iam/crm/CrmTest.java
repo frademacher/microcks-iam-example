@@ -3,7 +3,6 @@ package de.codecentric.iam.crm;
 import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.TestcontainersKeycloakServerConfig;
 import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.TestcontainersKeycloakServerConfigBuilder;
 import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.TestcontainersKeycloakServerSupplier;
-import de.codecentric.iam.keycloak.testframework.extensions.testcontainers.annotations.WithKeycloakTestcontainer;
 import de.codecentric.iam.keycloak.testframework.ui.page.RegistrationPage;
 import io.github.microcks.testcontainers.MicrocksContainer;
 import org.codehaus.plexus.util.StringUtils;
@@ -32,8 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Class holding Keycloak integration tests with the CRM system.
  */
 @Testcontainers
-@KeycloakIntegrationTest
-@WithKeycloakTestcontainer(config = CrmTest.KeycloakTestcontainerConfig.class)
+@KeycloakIntegrationTest(config = CrmTest.KeycloakTestcontainerConfig.class)
 class CrmTest {
     private static final String TEST_REALM_NAME = "test";
     private static final String API_SPEC_RESOURCE_PATH = "crm-api.yaml";
@@ -65,16 +63,15 @@ class CrmTest {
      * Keycloak's Testcontainers Module.
      * @see TestcontainersKeycloakServerSupplier
      */
-    static class KeycloakTestcontainerConfig implements TestcontainersKeycloakServerConfig {
+    static class KeycloakTestcontainerConfig extends TestcontainersKeycloakServerConfig {
         @Override
-        public TestcontainersKeycloakServerConfigBuilder configure() {
+        public TestcontainersKeycloakServerConfigBuilder getBuilder() {
             return new TestcontainersKeycloakServerConfigBuilder()
                 .withCopyClasspathResourceToContainer("keycloak/keycloak.conf", "/opt/keycloak/conf/keycloak.conf")
                 .withWriteStringToContainerFile(apiMock.mockedKeycloakConfig(),
                     "/opt/" + KEYCLOAK_API_CONFIG_RESOURCE_PATH)
                 .withNetwork(CONTAINER_NETWORK)
                 .withDebugFixedPort(32781, false)
-                .withAdminCredentials("admin", "admin")
                 .withProviderClassesFrom("target/classes")
                 .withRealmImportFile("keycloak/test-realm.json");
         }
