@@ -1,6 +1,5 @@
 package de.codecentric.iam.keycloak.testframework.extensions.testcontainers;
 
-import dasniko.testcontainers.keycloak.KeycloakContainer;
 import org.keycloak.testframework.server.DefaultKeycloakServerConfig;
 
 /**
@@ -9,10 +8,4 @@ import org.keycloak.testframework.server.DefaultKeycloakServerConfig;
  */
 public abstract class TestcontainersKeycloakServerConfig extends DefaultKeycloakServerConfig {
     public abstract TestcontainersKeycloakServerConfigBuilder getBuilder();
-
-    final KeycloakContainer startContainer() {
-        var container = getBuilder().getConfiguredKeycloakContainer();
-        container.start();
-        return container;
-    }
 }

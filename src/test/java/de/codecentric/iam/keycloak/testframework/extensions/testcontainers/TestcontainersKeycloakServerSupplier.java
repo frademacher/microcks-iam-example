@@ -1,20 +1,21 @@
 package de.codecentric.iam.keycloak.testframework.extensions.testcontainers;
 
+import dasniko.testcontainers.keycloak.KeycloakContainer;
+import org.jboss.logging.Logger;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.testframework.annotations.KeycloakIntegrationTest;
 import org.keycloak.testframework.injection.InstanceContext;
-import org.keycloak.testframework.injection.LifeCycle;
 import org.keycloak.testframework.injection.RequestedInstance;
 import org.keycloak.testframework.injection.Supplier;
 import org.keycloak.testframework.injection.SupplierHelpers;
-import org.keycloak.testframework.injection.SupplierOrder;
+import org.keycloak.testframework.server.AbstractKeycloakServerSupplier;
 import org.keycloak.testframework.server.KeycloakServer;
 import org.keycloak.testframework.server.RemoteKeycloakServer;
 
 /**
  * Keycloak Test Framework {@link Supplier} for Keycloak instances running in testcontainers.
  */
-public class TestcontainersKeycloakServerSupplier implements Supplier<KeycloakServer, KeycloakIntegrationTest> {
+public class TestcontainersKeycloakServerSupplier extends AbstractKeycloakServerSupplier {
     @Override
     public String getAlias() {
         return "testcontainers";
@@ -27,34 +28,34 @@ public class TestcontainersKeycloakServerSupplier implements Supplier<KeycloakSe
      */
     @Override
     public KeycloakServer getValue(InstanceContext<KeycloakServer, KeycloakIntegrationTest> instanceContext) {
-        var annotation = instanceContext.getAnnotation();
-        var containerConfig = (TestcontainersKeycloakServerConfig) SupplierHelpers.getInstance(annotation.config());
-        var container = containerConfig.startContainer();
-        return new TestcontainersKeycloakServer(container.getAuthServerUrl(), container.getKeycloakAdminClient());
+        var server = (TestcontainersKeycloakServer) getServer();
+        server.startContainer(
+            (TestcontainersKeycloakServerConfig) SupplierHelpers.getInstance(instanceContext.getAnnotation().config())
+        );
+        return server;
+    }
+
+    @Override
+    public KeycloakServer getServer() {
+        return new TestcontainersKeycloakServer();
     }
 
     static class TestcontainersKeycloakServer extends RemoteKeycloakServer {
-        private final String baseUrl;
-        private final Keycloak adminClient;
+        private KeycloakContainer container;
 
-        public TestcontainersKeycloakServer(String baseUrl, Keycloak adminClient) {
-            this.baseUrl = baseUrl;
-            this.adminClient = adminClient;
+        public void startContainer(TestcontainersKeycloakServerConfig config) {
+            container = config.getBuilder().getConfiguredKeycloakContainer();
+            container.start();
         }
 
         @Override
         public String getBaseUrl() {
-            return baseUrl;
+            return container.getAuthServerUrl();
         }
 
         public Keycloak getAdminClient() {
-            return adminClient;
+            return container.getKeycloakAdminClient();
         }
-    }
-
-    @Override
-    public LifeCycle getDefaultLifecycle() {
-        return LifeCycle.GLOBAL;
     }
 
     @Override
@@ -68,12 +69,12 @@ public class TestcontainersKeycloakServerSupplier implements Supplier<KeycloakSe
     }
 
     @Override
-    public void close(InstanceContext<KeycloakServer, KeycloakIntegrationTest> instanceContext) {
-        instanceContext.getValue().stop();
+    public boolean requiresDatabase() {
+        return false;
     }
 
     @Override
-    public int order() {
-        return SupplierOrder.KEYCLOAK_SERVER;
+    public Logger getLogger() {
+        return null;
     }
 }

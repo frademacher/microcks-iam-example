@@ -19,12 +19,12 @@
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <commons-io.version>2.21.0</commons-io.version>
         <junit.version>6.0.1</junit.version>
-        <keycloak.version>26.4.7</keycloak.version>
+        <keycloak.version>26.5.0</keycloak.version>
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
         <maven-resources-plugin.version>3.4.0</maven-resources-plugin.version>
         <microcks-app.version>1.13.1</microcks-app.version>
         <microcks-testcontainers.version>0.4.2</microcks-testcontainers.version>
-        <testcontainers.version>2.0.2</testcontainers.version>
+        <testcontainers.version>2.0.3</testcontainers.version>
         <testcontainers-keycloak.version>4.0.1</testcontainers-keycloak.version>
     </properties>
 

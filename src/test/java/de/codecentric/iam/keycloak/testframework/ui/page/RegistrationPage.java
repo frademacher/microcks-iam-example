@@ -1,7 +1,7 @@
 package de.codecentric.iam.keycloak.testframework.ui.page;
 
 import org.keycloak.testframework.ui.page.AbstractPage;
-import org.openqa.selenium.WebDriver;
+import org.keycloak.testframework.ui.webdriver.ManagedWebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
@@ -27,7 +27,7 @@ public class RegistrationPage extends AbstractPage {
     @FindBy(css = "[type=submit]")
     private WebElement submitButton;
 
-    public RegistrationPage(WebDriver driver) {
+    public RegistrationPage(ManagedWebDriver driver) {
         super(driver);
     }
 
