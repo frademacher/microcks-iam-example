@@ -6,6 +6,9 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
+import java.io.IOException;
+import java.util.Properties;
+
 /**
  * Builder for the configurations of {@link org.keycloak.testframework.server.KeycloakServer}s that run inside a
  * Keycloak testcontainer. Basically, the builder methods wrap those of
@@ -16,10 +19,17 @@ public class TestcontainersKeycloakServerConfigBuilder {
     private final KeycloakContainer keycloakContainer;
 
     public TestcontainersKeycloakServerConfigBuilder() {
-        keycloakContainer = new KeycloakContainer();
-        keycloakContainer
-            .withAdminUsername(Config.getAdminUsername())
-            .withAdminPassword(Config.getAdminPassword());
+        try (var is = TestcontainersKeycloakServerConfigBuilder.class.getResourceAsStream("/application.properties")) {
+            var props = new Properties();
+            props.load(is);
+            var keycloakVersion = props.getProperty("keycloak.version");
+            keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:" + keycloakVersion);
+            keycloakContainer
+                .withAdminUsername(Config.getAdminUsername())
+                .withAdminPassword(Config.getAdminPassword());
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     public KeycloakContainer getConfiguredKeycloakContainer() {

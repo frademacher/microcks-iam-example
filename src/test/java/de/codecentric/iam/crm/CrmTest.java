@@ -21,6 +21,9 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.io.IOException;
+import java.util.Properties;
+
 import static de.codecentric.iam.crm.CrmApiConfig.API_CONFIG_SECRET_NAME;
 import static de.codecentric.iam.keycloak.UserAttributes.CRM_CUSTOMER_ADDRESS_ATTRIBUTE;
 import static de.codecentric.iam.keycloak.UserAttributes.CRM_CUSTOMER_ID_ATTRIBUTE;
@@ -45,9 +48,10 @@ class CrmTest {
     private static ApiMock apiMock;
 
     @Container
-    static final MicrocksContainer microcksContainer = new MicrocksContainer("quay.io/microcks/microcks-uber:1.13.1")
-        .withNetwork(CONTAINER_NETWORK)
-        .withMainArtifacts(API_SPEC_RESOURCE_PATH);
+    static final MicrocksContainer microcksContainer
+        = new MicrocksContainer("quay.io/microcks/microcks-uber:" + loadMicrocksVersion())
+            .withNetwork(CONTAINER_NETWORK)
+            .withMainArtifacts(API_SPEC_RESOURCE_PATH);
 
     /**
      * Prepare the API mock object which provides tests, among others, with mock data of CRM customers.
@@ -92,6 +96,16 @@ class CrmTest {
 
     @InjectPage
     private RegistrationPage registrationPage;
+
+    private static String loadMicrocksVersion() {
+        try (var is = CrmTest.class.getResourceAsStream("/application.properties")) {
+            var props = new Properties();
+            props.load(is);
+            return props.getProperty("microcks.version");
+        } catch (IOException ex) {
+            throw new ExceptionInInitializerError(ex);
+        }
+    }
 
     /**
      * Cleanup Keycloak login sessions on the test realm after each test.
