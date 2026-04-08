@@ -2,6 +2,7 @@ package de.codecentric.iam.crm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import org.keycloak.http.simple.SimpleHttp;
 import org.keycloak.models.KeycloakSession;
@@ -9,9 +10,6 @@ import org.keycloak.models.KeycloakSession;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
-
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_OK;
 
 /**
  * Facade for accessing operations of the CRM API at Keycloak runtime following in the form of a Fluent API.
@@ -147,7 +145,7 @@ public class CrmApiFacade {
                     .json(request)
                     .asResponse()
             ) {
-                return Optional.of(response.getStatus() == SC_CREATED);
+                return Optional.of(Response.Status.fromStatusCode(response.getStatus()) == Response.Status.CREATED);
             } catch (IOException ex) {
                 logger.error("Exception during customer request", ex);
                 return Optional.empty();
@@ -170,7 +168,7 @@ public class CrmApiFacade {
                     .auth(apiConfig.getApiToken())
                     .asResponse()
             ) {
-                return Optional.of(response.getStatus() == SC_OK);
+                return Optional.of(Response.Status.fromStatusCode(response.getStatus()) == Response.Status.OK);
             } catch (IOException ex) {
                 logger.error("Exception during exists customer request", ex);
                 return Optional.empty();

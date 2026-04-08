@@ -3,6 +3,7 @@ package de.codecentric.iam.keycloak;
 import de.codecentric.iam.crm.CrmApiFacade;
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.browser.UsernamePasswordForm;
@@ -25,7 +26,6 @@ import java.util.Objects;
 import static de.codecentric.iam.keycloak.UserAttributes.CRM_CUSTOMER_ADDRESS_ATTRIBUTE;
 import static de.codecentric.iam.keycloak.UserAttributes.CRM_CUSTOMER_ID_ATTRIBUTE;
 import static de.codecentric.iam.keycloak.UserUtils.updateKeycloakUser;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.keycloak.authentication.AuthenticationFlowError.INVALID_CREDENTIALS;
 import static org.keycloak.models.UserModel.EMAIL;
 import static org.keycloak.models.UserModel.FIRST_NAME;
@@ -77,7 +77,10 @@ public class MigratingLoginFormAuthenticator extends UsernamePasswordForm {
         var crmCustomer = CrmApiFacade
             .session(context.getSession())
             .getCustomer(crmLoginTokenJwt);
-        if (crmCustomer.isEmpty() || crmCustomer.get().httpStatus() != SC_OK) {
+        if (
+            crmCustomer.isEmpty() ||
+            Response.Status.fromStatusCode(crmCustomer.get().httpStatus()) != Response.Status.OK
+        ) {
             invalidCredentialsResponse(context);
             return;
         }
@@ -110,7 +113,10 @@ public class MigratingLoginFormAuthenticator extends UsernamePasswordForm {
         var crmLoginResponse = CrmApiFacade
             .session(context.getSession())
             .login(username, password);
-        if (crmLoginResponse.isEmpty() || crmLoginResponse.get().httpStatus() != SC_OK) {
+        if (
+            crmLoginResponse.isEmpty() ||
+            Response.Status.fromStatusCode(crmLoginResponse.get().httpStatus()) != Response.Status.OK
+        ) {
             invalidCredentialsResponse(context);
             return false;
         }
